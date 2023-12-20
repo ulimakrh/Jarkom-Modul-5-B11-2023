@@ -162,3 +162,44 @@ iptables -A INPUT -p tcp --dport 8080 -j ACCEPT
 iptables -A INPUT -p tcp -j DROP
 iptables -A INPUT -p udp -j DROP
 ```
+
+## Soal 3
+`Kepala Suku North Area meminta kalian untuk membatasi DHCP dan DNS Server hanya dapat dilakukan ping oleh maksimal 3 device secara bersamaan, selebihnya akan di drop.`
+Konfigurasi tambahan pada DHCP Server dan DNS Server sehingga hanya akan bisa melakukan PING tiap detiknya oleh maksimal 3 node.
+```
+iptables -F
+iptables -A INPUT -p icmp --icmp-type echo-request -m limit --limit 3/second -j ACCEPT 
+iptables -A INPUT -p icmp --icmp-type echo-request -j DROP
+```
+
+## Soal 4
+`Lakukan pembatasan sehingga koneksi SSH pada Web Server hanya dapat dilakukan oleh masyarakat yang berada pada GrobeForest.`
+Buat sebuah file .sh di kedua web server (Sein & Stark) yang akan menyimpan script untuk menambahkan iptables rules sebagai berikut:
+```
+iptables -A INPUT -p tcp --dport 22 -m iprange --src-range 192.172.4.1-192.172.7.254  -j ACCEPT
+iptables -A OUTPUT -p tcp --sport 22 -m iprange --dst-range 192.172.4.1-192.172.7.254 -j ACCEPT
+iptables -A INPUT -p tcp --dport 22 -j DROP
+iptables -A OUTPUT -p tcp --sport 22 -j DROP
+```
+Pada baris ke-3 dan ke-4, dilakukan DROP terhadap semua request INPUT yang diarahkan ke port 22 (TCP) dan OUTPUT yang berasal dari port 22 (TCP), yaitu port default SSH.
+Kemudian ditambahkan rules pada baris ke-1 dan ke-2 untuk menerima request serupa hanya bila range ip tujuan merupakan bagian dari subnet warga GrobeForest untuk INPUT dan range ip asal merupakan bagian dari subnet warga GrobeForest untuk OUTPUT.
+
+## Soal 5
+`Selain itu, akses menuju WebServer hanya diperbolehkan saat jam kerja yaitu Senin-Jumat pada pukul 08.00-16.00.`
+Pada file .sh di kedua web server (Sein & Stark), tambahkan script untuk menambahkan iptables rules di atas script untuk nomor 4 seperti sebagai berikut:
+```
+iptables -A INPUT -m time --weekdays Sat,Sun -j DROP
+iptables -A INPUT -p all -m time --timestart 16:00 --timestop 23:59:59 -j DROP
+iptables -A INPUT -p all -m time --timestart 00:00 --timestop 08:00 -j DROP
+```
+Baris ke-2 dan ke-3 akan melakukan DROP terhadap semua request INPUT di luar dari range waktu yang diinginkan (08:00 - 16:00), yakni sebelum jam 8 pagi (00:00 - 08:00) dan sesudah jam 4 sore (16:00 - 23:59:59).
+Baris ke-1 melakukan DROP terhadap semua request INPUT di luar hari kerja (Senin - Jumat), yakni pada hari Sabtu dan Minggu.
+
+## Soal 6
+`Lalu, karena ternyata terdapat beberapa waktu di mana network administrator dari WebServer tidak bisa stand by, sehingga perlu ditambahkan rule bahwa akses pada hari Senin - Kamis pada jam 12.00 - 13.00 dilarang (istirahat maksi cuy) dan akses di hari Jumat pada jam 11.00 - 13.00 juga dilarang (maklum, Jumatan rek).`
+Tambahkan script di atas nomor sebelumnya untuk menambahkan iptables rules sebagai berikut:
+```
+iptables -A INPUT -m time --timestart 12:00 --timestop 13:00 --weekdays Mon,Tue,Wed,Thu -j DROP
+iptables -A INPUT -m time --timestart 11:00 --timestop 13:00 --weekdays Fri -j DROP
+```
+Maka, baris ke-1 melakukan DROP terhadap semua request INPUT di hari Senin - Kamis pada jam makan siang (12:00 - 13:00) dan baris ke-2 melakukan DROP terhadap semua request INPUT di hari Jumat pada jam jumatan (11:00 - 13:00).
