@@ -139,8 +139,151 @@ auto eth0
 iface eth0 inet dhcp
 ```
 ## Routing
+#### Aura
+```
+# Routing Ke Frieren
+# route add -net <NID subnet> netmask <netmask> gw <IP gateway>
+# A5
+route add -net 10.14.0.8 netmask 255.255.255.252 gw 10.14.0.6
+# A6
+route add -net 10.14.0.12 netmask 255.255.255.252 gw 10.14.0.6
+# A7
+route add -net 10.14.2.0 netmask 255.255.254.0 gw 10.14.0.6
+# A8
+route add -net 10.14.0.128 netmask 255.255.255.128 gw 10.14.0.6
+# A9
+route add -net 10.14.0.16 netmask 255.255.255.252 gw 10.14.0.6
+# A10
+route add -net 10.14.0.20 netmask 255.255.255.252 gw 10.14.0.6
+
+
+# Routing ke Heiter
+# A2
+route add -net 10.14.8.0 netmask 255.255.248.0 gw 10.14.0.2
+# A3
+route add -net 10.14.4.0 netmask 255.255.252.0 gw 10.14.0.2
+
+```
+#### Fern
+```
+# Backrouting
+route add -net 0.0.0.0 netmask 0.0.0.0 gw 10.14.0.129
+```
+#### Frieren
+```
+# Ke Himmel
+# Backrouting
+route add -net 0.0.0.0 netmask 0.0.0.0 gw 10.14.0.5
+# A7
+route add -net 10.14.2.0 netmask 255.255.254.0 gw 10.14.0.14
+# A8
+route add -net 10.14.0.128 netmask 255.255.255.128 gw 10.14.0.14
+# A9
+route add -net 10.14.0.16 netmask 255.255.255.252 gw 10.14.0.14
+# A10
+route add -net 10.14.0.20 netmask 255.255.255.252 gw 10.14.0.14
+```
+#### Heiter
+```
+# Backrouting
+route add -net 0.0.0.0 netmask 0.0.0.0 gw 10.14.0.1
+```
+#### Himmel
+```
+# Backrouting
+route add -net 0.0.0.0 netmask 0.0.0.0 gw 10.14.0.13
+# A9
+route add -net 10.14.0.16 netmask 255.255.255.252 gw 10.14.0.130
+# A10
+route add -net 10.14.0.20 netmask 255.255.255.252 gw 10.14.0.130
+```
+#### Test Routing menggunakan PING
+![image](https://github.com/ulimakrh/Jarkom-Modul-5-B11-2023/assets/114993076/3a226389-fb19-40f1-8238-e800293ad8eb)
 
 ## DHCP
+#### Konfigurasi DHCP Server (Revolte)
+```
+
+apt-get update -y
+
+apt-get install isc-dhcp-server -y
+
+echo "
+INTERFACES=\"eth0\"
+" > /etc/default/isc-dhcp-server
+
+echo "
+
+default-lease-time 28800;
+max-lease-time 57600;
+
+ddns-update-style none;
+
+
+subnet 10.14.0.20 netmask 255.255.255.252 {
+    option routers 10.14.0.21;
+    option broadcast-address 10.14.0.23;
+    option domain-name-servers 192.168.122.1;
+}
+
+# Turk Region
+subnet 10.14.8.0 netmask 255.255.248.0 {
+    range 10.14.8.0 10.14.15.254;
+    option routers 10.14.8.1;
+    option broadcast-address 10.14.15.255;
+    option domain-name-servers 192.168.122.1;
+}
+
+# Grobe Forest
+subnet 10.14.4.0 netmask 255.255.252.0 {
+    range 10.14.4.1 10.14.7.254;
+    option routers 10.14.4.1;
+    option broadcast-address 10.14.7.255;
+    option domain-name-servers 192.168.122.1;
+}
+
+# LaubHilss
+subnet 10.14.2.0 netmask 255.255.254.0 {
+    range 10.14.2.0 10.14.3.254;
+    option routers 10.14.2.1;
+    option broadcast-address 10.14.3.255;
+    option domain-name-servers 192.168.122.1;
+}
+
+# SchwerMountain
+subnet 10.14.0.128 netmask 255.255.255.128 {
+    range 10.14.0.129 10.14.0.254;
+    option routers 10.14.0.129;
+    option broadcast-address 10.14.0.255;
+    option domain-name-servers 192.168.122.1;
+}
+
+" > /etc/dhcp/dhcpd.conf
+
+rm /var/run/dhcpd.pid
+
+service isc-dhcp-server restart
+service isc-dhcp-server status
+```
+#### Konfigurasi DHCP Relay (Himmel & Heiter)
+```
+
+apt-get update
+
+apt-get install isc-dhcp-relay -y
+
+echo '
+SERVERS="10.14.0.22"
+INTERFACES="eth0 eth1 eth2"
+OPTIONS=""
+' > /etc/default/isc-dhcp-relay
+
+echo '
+net.ipv4.ip_forward=1
+' > /etc/sysctl.conf
+
+service isc-dhcp-relay restart
+```
 
 ## Soal 1
 `Agar topologi yang kalian buat dapat mengakses keluar, kalian diminta untuk mengkonfigurasi Aura menggunakan iptables, tetapi tidak ingin menggunakan MASQUERADE.`
