@@ -319,8 +319,8 @@ iptables -A INPUT -p icmp --icmp-type echo-request -j DROP
 `Lakukan pembatasan sehingga koneksi SSH pada Web Server hanya dapat dilakukan oleh masyarakat yang berada pada GrobeForest.`
 Buat sebuah file .sh di kedua web server (Sein & Stark) yang akan menyimpan script untuk menambahkan iptables rules sebagai berikut:
 ```
-iptables -A INPUT -p tcp --dport 22 -m iprange --src-range 192.172.4.1-192.172.7.254  -j ACCEPT
-iptables -A OUTPUT -p tcp --sport 22 -m iprange --dst-range 192.172.4.1-192.172.7.254 -j ACCEPT
+iptables -A INPUT -p tcp --dport 22 -m iprange --src-range 10.14.4.1-10.14.7.254  -j ACCEPT
+iptables -A OUTPUT -p tcp --sport 22 -m iprange --dst-range 10.14.4.1-10.14.7.254 -j ACCEPT
 iptables -A INPUT -p tcp --dport 22 -j DROP
 iptables -A OUTPUT -p tcp --sport 22 -j DROP
 ```
