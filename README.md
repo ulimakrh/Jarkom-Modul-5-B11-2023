@@ -286,9 +286,8 @@ service isc-dhcp-relay restart
 ```
 
 ## Soal 1
-```
-Agar topologi yang kalian buat dapat mengakses keluar, kalian diminta untuk mengkonfigurasi Aura menggunakan iptables, tetapi tidak ingin menggunakan MASQUERADE.
-```
+> Agar topologi yang kalian buat dapat mengakses keluar, kalian diminta untuk mengkonfigurasi Aura menggunakan iptables, tetapi tidak ingin menggunakan MASQUERADE.
+
 Lakukan command berikut pada Aura untuk mengganti IP dari source packet yang akan keluar melalui interface eth0 Aura menuju keluar NAT. `command $(/sbin/ip -4 a show eth0 | /bin/grep -Po 'inet \K[0-9.]*')` digunakan untuk mendapatkan IP eth0 dari router Aura.
 
 ```
@@ -299,9 +298,8 @@ Test PING google.com
 ![image](https://github.com/ulimakrh/Jarkom-Modul-5-B11-2023/assets/114993076/bf738ca7-0314-4501-a193-8db6dff65af5)
 
 ## Soal 2
-```
-Kalian diminta untuk melakukan drop semua TCP dan UDP kecuali port 8080 pada TCP.
-```
+> Kalian diminta untuk melakukan drop semua TCP dan UDP kecuali port 8080 pada TCP.
+
 Konfigurasi tambahan pada Client
 ```
 iptables -F
@@ -311,9 +309,8 @@ iptables -A INPUT -p udp -j DROP
 ```
 
 ## Soal 3
-```
-Kepala Suku North Area meminta kalian untuk membatasi DHCP dan DNS Server hanya dapat dilakukan ping oleh maksimal 3 device secara bersamaan, selebihnya akan di drop.
-```
+> Kepala Suku North Area meminta kalian untuk membatasi DHCP dan DNS Server hanya dapat dilakukan ping oleh maksimal 3 device secara bersamaan, selebihnya akan di drop.
+
 Konfigurasi tambahan pada DHCP Server dan DNS Server sehingga hanya akan bisa melakukan PING tiap detiknya oleh maksimal 3 node.
 ```
 iptables -F
@@ -322,9 +319,8 @@ iptables -A INPUT -p icmp --icmp-type echo-request -j DROP
 ```
 
 ## Soal 4
-```
-Lakukan pembatasan sehingga koneksi SSH pada Web Server hanya dapat dilakukan oleh masyarakat yang berada pada GrobeForest.
-```
+> Lakukan pembatasan sehingga koneksi SSH pada Web Server hanya dapat dilakukan oleh masyarakat yang berada pada GrobeForest.
+
 Buat sebuah file .sh di kedua web server (Sein & Stark) yang akan menyimpan script untuk menambahkan iptables rules sebagai berikut:
 ```
 iptables -A INPUT -p tcp --dport 22 -m iprange --src-range 10.14.4.1-10.14.7.254  -j ACCEPT
@@ -336,9 +332,8 @@ Pada baris ke-3 dan ke-4, dilakukan DROP terhadap semua request INPUT yang diara
 Kemudian ditambahkan rules pada baris ke-1 dan ke-2 untuk menerima request serupa hanya bila range ip tujuan merupakan bagian dari subnet warga GrobeForest untuk INPUT dan range ip asal merupakan bagian dari subnet warga GrobeForest untuk OUTPUT.
 
 ## Soal 5
-```
-Selain itu, akses menuju WebServer hanya diperbolehkan saat jam kerja yaitu Senin-Jumat pada pukul 08.00-16.00.
-```
+> Selain itu, akses menuju WebServer hanya diperbolehkan saat jam kerja yaitu Senin-Jumat pada pukul 08.00-16.00.
+
 Pada file .sh di kedua web server (Sein & Stark), tambahkan script untuk menambahkan iptables rules di atas script untuk nomor 4 seperti sebagai berikut:
 ```
 iptables -A INPUT -m time --weekdays Sat,Sun -j DROP
@@ -349,9 +344,8 @@ Baris ke-2 dan ke-3 akan melakukan DROP terhadap semua request INPUT di luar dar
 Baris ke-1 melakukan DROP terhadap semua request INPUT di luar hari kerja (Senin - Jumat), yakni pada hari Sabtu dan Minggu.
 
 ## Soal 6
-```
-Lalu, karena ternyata terdapat beberapa waktu di mana network administrator dari WebServer tidak bisa stand by, sehingga perlu ditambahkan rule bahwa akses pada hari Senin - Kamis pada jam 12.00 - 13.00 dilarang (istirahat maksi cuy) dan akses di hari Jumat pada jam 11.00 - 13.00 juga dilarang (maklum, Jumatan rek).
-```
+> Lalu, karena ternyata terdapat beberapa waktu di mana network administrator dari WebServer tidak bisa stand by, sehingga perlu ditambahkan rule bahwa akses pada hari Senin - Kamis pada jam 12.00 - 13.00 dilarang (istirahat maksi cuy) dan akses di hari Jumat pada jam 11.00 - 13.00 juga dilarang (maklum, Jumatan rek).
+
 Tambahkan script di atas nomor sebelumnya untuk menambahkan iptables rules sebagai berikut:
 ```
 iptables -A INPUT -m time --timestart 12:00 --timestop 13:00 --weekdays Mon,Tue,Wed,Thu -j DROP
@@ -360,18 +354,31 @@ iptables -A INPUT -m time --timestart 11:00 --timestop 13:00 --weekdays Fri -j D
 Maka, baris ke-1 melakukan DROP terhadap semua request INPUT di hari Senin - Kamis pada jam makan siang (12:00 - 13:00) dan baris ke-2 melakukan DROP terhadap semua request INPUT di hari Jumat pada jam jumatan (11:00 - 13:00).
 
 ## Soal 7
+> Karena terdapat 2 WebServer, kalian diminta agar setiap client yang mengakses Sein dengan Port 80 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan dan request dari client yang mengakses Stark dengan port 443 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan.
+Masukkan script berikut pada router yang terkoneksi dengan Client (Heiter-Himmel)
 ```
-Karena terdapat 2 WebServer, kalian diminta agar setiap client yang mengakses Sein dengan Port 80 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan dan request dari client yang mengakses Stark dengan port 443 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan.
+iptables -A PREROUTING -t nat -p tcp --dport 80 -d 192.172.4.2 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 10.14.0.10:80
+iptables -A PREROUTING -t nat -p tcp --dport 443 -d 192.172.0.10 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 10.4.4.2:443
 ```
+Baris ke-1 melakukan pengalihan request yang diarahkan ke IP Sein (10.14.4.2) pada port 80 agar secara bergantian diarahkan kesana dan juga ke Stark (10.14.0.10) pada port yang sama
+Baris ke-2 melakukan pengalihan request yang diarahkan ke IP Stark (10.14.0.10) pada port 443 agar secara bergantian diarahkan kesana dan juga ke Sein (10.14.4.2) pada port yang sama
 ## Soal 8
+> Karena berbeda koalisi politik, maka subnet dengan masyarakat yang berada pada Revolte dilarang keras mengakses WebServer hingga masa pencoblosan pemilu kepala suku 2024 berakhir. Masa pemilu (hingga pemungutan dan penghitungan suara selesai) kepala suku bersamaan dengan masa pemilu Presiden dan Wakil Presiden Indonesia 2024.
 ```
-Karena berbeda koalisi politik, maka subnet dengan masyarakat yang berada pada Revolte dilarang keras mengakses WebServer hingga masa pencoblosan pemilu kepala suku 2024 berakhir. Masa pemilu (hingga pemungutan dan penghitungan suara selesai) kepala suku bersamaan dengan masa pemilu Presiden dan Wakil Presiden Indonesia 2024.
+iptables -A INPUT -m time --datestart "2023-10-19T00:00:00" --datestop "2024-6-28T00:00:00" -m iprange --src-range 10.14.0.21-10.14.0.24 -j DROP
 ```
 ## Soal 9
+> Sadar akan adanya potensial saling serang antar kubu politik, maka WebServer harus dapat secara otomatis memblokir alamat IP yang melakukan scanning port dalam jumlah banyak (maksimal 20 scan port) di dalam selang waktu 10 menit. (clue: test dengan nmap)
 ```
-Sadar akan adanya potensial saling serang antar kubu politik, maka WebServer harus dapat secara otomatis memblokir alamat IP yang melakukan scanning port dalam jumlah banyak (maksimal 20 scan port) di dalam selang waktu 10 menit. (clue: test dengan nmap)
+iptables -N PORTSCAN
+iptables -A INPUT -m recent --name portscan --update --seconds 600 --hitcount 20 -j DROP
+iptables -A FORWARD -m recent --name portscan --update --seconds 600 --hitcount 20 -j DROP
+iptables -A INPUT -m recent --name portscan --set -j ACCEPT
+iptables -A FORWARD -m recent --name portscan --set -j ACCEPT
 ```
 ## Soal 10
+> Karena kepala suku ingin tau paket apa saja yang di-drop, maka di setiap node server dan router ditambahkan logging paket yang di-drop dengan standard syslog level.
 ```
-Karena kepala suku ingin tau paket apa saja yang di-drop, maka di setiap node server dan router ditambahkan logging paket yang di-drop dengan standard syslog level.
+service rsyslog restart
+iptables -A INPUT -j LOG --log-prefix "Dropped: " --log-level debug -m limit --limit 1/second
 ```
